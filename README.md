@@ -192,3 +192,9 @@ Status possíveis de pagamento via Stripe.
 - O sistema foi simplificado para **uma única barbearia**, eliminando relacionamentos multi-estabelecimento.
 - Pagamentos de **serviços** (via agendamento) e **produtos** estão totalmente integrados ao Stripe de forma segura e sincronizada.
 - Todas as funcionalidades originais (autenticação, agendamento) foram preservadas e aprimoradas.
+
+## Repositórios
+Este projeto está conectado a dois repositórios remotos:
+- **Principal (TGL Solutions):** `https://github.com/comercialtglsolutions-dev/TLS-Barber`
+- **Pessoal (Backup):** `https://github.com/Jvlima22/TLS-Barber`
+
