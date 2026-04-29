@@ -124,12 +124,6 @@ async function main() {
   // 4. Lista de Bancos suportados
   const banks = [
     {
-      name: "Itaú Empresas",
-      provider: "ITAU",
-      imageUrl: "/banks/itau.png",
-      isActive: true,
-    },
-    {
       name: "Bradesco Net Empresa",
       provider: "BRADESCO",
       imageUrl: "/banks/bradesco.png",

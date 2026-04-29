@@ -11,6 +11,13 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/app/_components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/_components/ui/select"
 import { upsertBankCredential } from "@/app/_actions/upsert-bank-credential"
 import { toast } from "sonner"
 import {
@@ -40,11 +47,12 @@ const getBankHelpInstructions = (provider: string) => {
             >
               devportal.itau.com.br
             </a>
-            ).
+            ) e faça seu login.
           </>,
-          "Faça login com os dados da conta Empresas do titular.",
-          "Crie uma nova &apos;Aplicação&apos; na seção de Pix ou Cobrança.",
-          "Copie o &apos;Client ID&apos; e &apos;Client Secret&apos; (Token Temporário) gerados e cole aqui.",
+          "No menu vertical à esquerda, vá em 'Minhas Aplicações' e clique em 'Criar nova'.",
+          "Escolha o produto 'Pix' (ou 'Recebimentos e Pix') e clique em continuar.",
+          "Informe um nome para sua aplicação e gere as credenciais (Client ID e Secret).",
+          "Copie e cole abaixo as chaves geradas para ativar o ambiente de Sandbox (Testes) ou Produção.",
         ],
         link: "https://devportal.itau.com.br/",
       }
@@ -194,8 +202,8 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
         return
       }
     } else {
-      if (!clientId || !clientSecret) {
-        toast.error("Preencha Client ID e Client Secret")
+      if (!clientSecret) {
+        toast.error("Preencha o campo de credencial obrigatório")
         return
       }
     }
@@ -479,31 +487,52 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
           </DialogHeader>
 
           <div className="flex flex-col gap-6 py-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-white">Ambiente</label>
+              <Select
+                value={environment}
+                onValueChange={(v: any) => setEnvironment(v)}
+              >
+                <SelectTrigger className="border-white/10 bg-[#222]">
+                  <SelectValue placeholder="Selecione o ambiente" />
+                </SelectTrigger>
+                <SelectContent className="border-white/10 bg-[#1A1A1A]">
+                  <SelectItem value="SANDBOX">Sandbox (Testes)</SelectItem>
+                  <SelectItem value="PRODUCTION">Produção (Real)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid gap-4">
-              {selectedBank?.provider !== "MERCADO_PAGO" && (
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-medium text-white">
-                    Client ID
-                  </label>
-                  <Input
-                    placeholder="Insira o Client ID"
-                    value={clientId}
-                    onChange={(e) => setClientId(e.target.value)}
-                    className="border-white/10 bg-[#222]"
-                  />
-                </div>
-              )}
+              {selectedBank?.provider !== "MERCADO_PAGO" &&
+                selectedBank?.provider !== "ITAU" && (
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-white">
+                      Client ID
+                    </label>
+                    <Input
+                      placeholder="Insira o Client ID"
+                      value={clientId}
+                      onChange={(e) => setClientId(e.target.value)}
+                      className="border-white/10 bg-[#222]"
+                    />
+                  </div>
+                )}
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-white">
                   {selectedBank?.provider === "MERCADO_PAGO"
                     ? "Access Token"
-                    : "Client Secret"}
+                    : selectedBank?.provider === "ITAU"
+                      ? "Itaú Client Secret"
+                      : "Client Secret"}
                 </label>
                 <Input
                   placeholder={
                     selectedBank?.provider === "MERCADO_PAGO"
                       ? "Copie o Access Token e cole aqui"
-                      : "Insira o Client Secret"
+                      : selectedBank?.provider === "ITAU"
+                        ? "Insira o Client Secret do Itaú"
+                        : "Insira o Client Secret"
                   }
                   type="password"
                   value={clientSecret}

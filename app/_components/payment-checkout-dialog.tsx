@@ -17,7 +17,7 @@ import {
   AlertCircleIcon,
 } from "lucide-react"
 import { toast } from "sonner"
-import { createMercadoPagoPayment } from "@/app/_actions/create-mercadopago-payment"
+import { createPayment } from "@/app/_actions/create-payment"
 import Image from "next/image"
 
 interface PaymentCheckoutDialogProps {
@@ -51,19 +51,22 @@ const PaymentCheckoutDialog = ({
     setMethod(selectedMethod)
 
     try {
-      const result = await createMercadoPagoPayment({
+      const result = await createPayment({
         itemId,
         type,
         method: selectedMethod,
         metadata,
       })
 
-      if (selectedMethod === "pix" && result.qrCode) {
-        setPixData({ qrCode: result.qrCode, base64: result.qrCodeBase64 })
+      if (selectedMethod === "pix" && (result as any).qrCode) {
+        setPixData({
+          qrCode: (result as any).qrCode,
+          base64: (result as any).qrCodeBase64,
+        })
         setLoading(false)
-      } else if (selectedMethod === "card" && result.url) {
+      } else if (selectedMethod === "card" && (result as any).url) {
         setLoading(true) // Mantém o spinner até a mudança de página
-        window.location.href = result.url
+        window.location.href = (result as any).url
       }
     } catch (error: any) {
       toast.error(error.message || "Erro ao processar pagamento")
@@ -190,15 +193,8 @@ const PaymentCheckoutDialog = ({
 
           <div className="flex items-center justify-center gap-2 border-t border-white/5 pt-6 opacity-30">
             <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-              Totalmente Seguro com
+              Pagamento Processado com Segurança
             </span>
-            <Image
-              src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo.png"
-              width={80}
-              height={12}
-              className="object-contain grayscale invert"
-              alt="MP Logo"
-            />
           </div>
         </div>
       </DialogContent>

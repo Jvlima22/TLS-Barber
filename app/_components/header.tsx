@@ -34,7 +34,7 @@ const Header = () => {
             alt="TLS Barber"
             src="/Logo.svg"
             height={18}
-            width={120}
+            width={180}
             className="lg:ml-[250px]"
           />
         </Link>
