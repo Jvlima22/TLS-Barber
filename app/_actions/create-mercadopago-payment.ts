@@ -18,6 +18,7 @@ export async function createMercadoPagoPayment(params: {
   // 1. Get Item Data
   let title = ""
   let price = 0
+  let barbershopId = ""
 
   if (params.type === "SERVICE") {
     if (params.itemId.startsWith("combined_")) {
@@ -29,6 +30,7 @@ export async function createMercadoPagoPayment(params: {
 
       title = orderedServices.map((s) => s.name).join(" + ")
       price = orderedServices.reduce((acc, s) => acc + Number(s.price), 0)
+      barbershopId = orderedServices[0]?.barbershopId || ""
     } else {
       const service = await db.service.findUnique({
         where: { id: params.itemId },
@@ -36,6 +38,7 @@ export async function createMercadoPagoPayment(params: {
       if (service) {
         title = service.name
         price = Number(service.price)
+        barbershopId = service.barbershopId
       } else {
         const combo = await db.combo.findUnique({
           where: { id: params.itemId },
@@ -43,6 +46,7 @@ export async function createMercadoPagoPayment(params: {
         if (!combo) throw new Error("Serviço ou Combo não encontrado.")
         title = combo.name
         price = Number(combo.price)
+        barbershopId = combo.barbershopId
       }
     }
   } else {
@@ -52,6 +56,7 @@ export async function createMercadoPagoPayment(params: {
     if (!product) throw new Error("Produto não encontrado")
     title = product.name
     price = Number(product.price)
+    barbershopId = product.barbershopId
   }
 
   // 2. Get Credentials
@@ -112,6 +117,7 @@ export async function createMercadoPagoPayment(params: {
           user_id: (session.user as any).id,
           item_id: params.itemId,
           type: params.type,
+          barbershop_id: barbershopId,
           date: params.metadata?.date,
           ...params.metadata,
         },
@@ -155,6 +161,7 @@ export async function createMercadoPagoPayment(params: {
             user_id: (session.user as any).id,
             item_id: params.itemId,
             type: params.type,
+            barbershop_id: barbershopId,
             date: params.metadata?.date,
             ...params.metadata,
           },

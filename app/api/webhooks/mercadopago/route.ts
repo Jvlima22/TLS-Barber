@@ -43,7 +43,13 @@ export async function POST(req: Request) {
         const metadata = payment.metadata
         if (!metadata) return NextResponse.json({ received: true })
 
-        const { user_id, item_id, type: itemType, date } = metadata
+        const {
+          user_id,
+          item_id,
+          type: itemType,
+          date,
+          barbershop_id,
+        } = metadata
 
         if (itemType === "SERVICE") {
           if (item_id.startsWith("combined_")) {
@@ -55,7 +61,8 @@ export async function POST(req: Request) {
                   serviceId: id,
                   date: new Date(date),
                   paymentStatus: "SUCCEEDED",
-                },
+                  barbershopId: barbershop_id,
+                } as any,
               })
             }
           } else {
@@ -70,7 +77,8 @@ export async function POST(req: Request) {
                   serviceId: item_id,
                   date: new Date(date),
                   paymentStatus: "SUCCEEDED",
-                },
+                  barbershopId: barbershop_id,
+                } as any,
               })
             } else {
               await db.booking.create({
@@ -79,7 +87,8 @@ export async function POST(req: Request) {
                   comboId: item_id,
                   date: new Date(date),
                   paymentStatus: "SUCCEEDED",
-                },
+                  barbershopId: barbershop_id,
+                } as any,
               })
             }
           }
@@ -92,7 +101,8 @@ export async function POST(req: Request) {
               userId: user_id,
               productId: item_id,
               paymentStatus: "SUCCEEDED",
-            },
+              barbershopId: barbershop_id,
+            } as any,
           })
           console.log(
             `[MP Webhook] Compra de produto criada para usuário ${user_id}`,
