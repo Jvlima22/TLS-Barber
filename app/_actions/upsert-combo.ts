@@ -18,7 +18,7 @@ export const upsertCombo = async (params: {
 }) => {
   const session = await getServerSession(authOptions)
 
-  if ((session?.user as any)?.role !== "ADMIN") {
+  if (!session?.user || (session.user as any).role !== "ADMIN") {
     throw new Error("Não autorizado")
   }
 
@@ -45,12 +45,14 @@ export const upsertCombo = async (params: {
 
   // VERIFICAÇÃO DE LIMITES DO PLANO
   if (!id) {
-    const user = await db.user.findUnique({
+    const user = (await db.user.findUnique({
       where: { id: (session.user as any).id },
+      // @ts-ignore
       select: { subscriptionPlan: true },
-    })
+    })) as any
 
     const count = await db.combo.count({
+      // @ts-ignore
       where: { barbershopId },
     })
 
