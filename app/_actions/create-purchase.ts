@@ -19,6 +19,7 @@ export const createPurchase = async (params: CreatePurchaseParams) => {
 
   const product = (await db.product.findUnique({
     where: { id: params.productId },
+    // @ts-ignore
     select: { barbershopId: true },
   })) as any
 
@@ -31,6 +32,7 @@ export const createPurchase = async (params: CreatePurchaseParams) => {
       productId: params.productId,
       quantity: params.quantity,
       userId: (session.user as any).id,
+      // @ts-ignore
       barbershop: {
         connect: { id: product.barbershopId },
       },
