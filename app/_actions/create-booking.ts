@@ -32,11 +32,21 @@ export const createBooking = async (params: CreateBookingParams) => {
     throw new Error("Usuário não autenticado!")
   }
 
-  // Cria a reserva no banco de dados
-  await db.booking.create({
+  const service = (await (db as any).service.findUnique({
+    where: { id: params.serviceId },
+    select: { barbershopId: true },
+  })) as any
+
+  if (!service) {
+    throw new Error("Serviço não encontrado")
+  }
+
+  await (db as any).booking.create({
     data: {
-      ...params,
-      userId: session.user.id, // Garante que o ID do usuário está presente
+      userId: (session.user as any).id,
+      serviceId: params.serviceId,
+      date: params.date,
+      barbershopId: service.barbershopId,
     },
   })
 

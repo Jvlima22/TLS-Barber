@@ -5,48 +5,43 @@ import { startOfDay, endOfDay } from "date-fns"
 
 interface GetAvailableSlotsProps {
   date: Date
+  barbershopId: string
 }
 
-// Simple in-memory cache for settings and operating days (they don't change every second)
-let cachedSettings: any = null
-let cachedStandardDays: any[] = []
-let lastCacheUpdate = 0
-const CACHE_TTL = 30000 // 30 seconds
-
-export const getAvailableSlots = async ({ date }: GetAvailableSlotsProps) => {
+export const getAvailableSlots = async ({
+  date,
+  barbershopId,
+}: GetAvailableSlotsProps) => {
   try {
-    const now = Date.now()
     const dayOfWeek = date.getDay()
     const normalizedDate = startOfDay(date)
 
-    // 1. Fetch bookings and exceptions (must be fresh)
-    // 2. Fetch settings and standard days (can be cached for a few seconds)
-    const fetchTasks: Promise<any>[] = [
+    // 1. Fetch all necessary data for this specific barbershop
+    const [exception, bookings, operatingDays, settings] = await Promise.all([
       (db as any).operatingException.findUnique({
-        where: { date: normalizedDate },
+        where: {
+          barbershopId_date: {
+            barbershopId,
+            date: normalizedDate,
+          },
+        },
       }),
       (db as any).booking.findMany({
-        where: { date: { gte: startOfDay(date), lte: endOfDay(date) } },
+        where: {
+          barbershopId,
+          date: { gte: startOfDay(date), lte: endOfDay(date) },
+        },
         select: { date: true },
       }),
-    ]
+      (db as any).operatingDay.findMany({
+        where: { barbershopId },
+      }),
+      (db as any).settings.findFirst({
+        where: { barbershopId },
+      }),
+    ])
 
-    if (!cachedSettings || now - lastCacheUpdate > CACHE_TTL) {
-      fetchTasks.push((db as any).operatingDay.findMany())
-      fetchTasks.push((db as any).settings.findFirst())
-    }
-
-    const results = await Promise.all(fetchTasks)
-    const exception = results[0]
-    const bookings = results[1]
-
-    if (results.length > 2) {
-      cachedStandardDays = results[2]
-      cachedSettings = results[3]
-      lastCacheUpdate = now
-    }
-
-    const standardDay = cachedStandardDays.find(
+    const standardDay = operatingDays.find(
       (d: any) => d.dayOfWeek === dayOfWeek,
     )
 
@@ -66,9 +61,9 @@ export const getAvailableSlots = async ({ date }: GetAvailableSlotsProps) => {
         startTime = standardDay.startTime
         endTime = standardDay.endTime
       }
-    } else if (cachedSettings) {
-      startTime = cachedSettings.startHour || "09:00"
-      endTime = cachedSettings.endHour || "19:00"
+    } else if (settings) {
+      startTime = settings.startHour || "09:00"
+      endTime = settings.endHour || "19:00"
     }
 
     if (!isOpen) return []

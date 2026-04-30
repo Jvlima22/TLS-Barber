@@ -79,9 +79,7 @@ export async function POST(req: Request) {
     }
 
     const appUrl = (
-      process.env.NEXT_PUBLIC_APP_URL ||
-      process.env.NEXT_PUBLIC_APP_URL_LOCAL ||
-      "http://localhost:3000"
+      process.env.NEXT_PUBLIC_URL || "http://localhost:3000"
     ).replace(/\/$/, "")
 
     // 2. BUSCAR O GATEWAY BANCÁRIO DEFINIDO NO PAINEL

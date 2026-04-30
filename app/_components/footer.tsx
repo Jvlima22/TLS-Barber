@@ -1,8 +1,14 @@
+"use client"
+
 import Link from "next/link"
 import { Card, CardContent } from "./ui/card"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 
 const Footer = () => {
+  const pathname = usePathname()
+  if (pathname === "/") return null
+
   return (
     <footer>
       <Card>

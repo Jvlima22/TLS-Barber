@@ -25,13 +25,19 @@ import {
   AlertDialogTrigger,
 } from "@/app/_components/ui/alert-dialog"
 
+import { getPlanLimits } from "@/app/_lib/subscription-limits"
+
 interface ProductsTableProps {
   products: Product[]
+  subscriptionPlan: string
 }
 
-const ProductsTable = ({ products }: ProductsTableProps) => {
+const ProductsTable = ({ products, subscriptionPlan }: ProductsTableProps) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  const limits = getPlanLimits(subscriptionPlan as any)
+  const isLimitReached = products.length >= limits.maxProducts
 
   const handleDeleteClick = async (id: string) => {
     try {
@@ -54,7 +60,10 @@ const ProductsTable = ({ products }: ProductsTableProps) => {
           Gerenciar produtos
         </CardTitle>
         <div className="w-fit">
-          <UpsertProductDialog />
+          <UpsertProductDialog
+            disabled={isLimitReached}
+            disabledMessage={`Limite de ${limits.maxProducts} atingido`}
+          />
         </div>
       </CardHeader>
       <CardContent>

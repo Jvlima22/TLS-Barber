@@ -25,14 +25,24 @@ import {
   AlertDialogTrigger,
 } from "@/app/_components/ui/alert-dialog"
 
+import { getPlanLimits } from "@/app/_lib/subscription-limits"
+
 interface CombosTableProps {
   combos: (any & { service1: Service; service2: Service })[]
   services: Service[]
+  subscriptionPlan: string
 }
 
-const CombosTable = ({ combos, services }: CombosTableProps) => {
+const CombosTable = ({
+  combos,
+  services,
+  subscriptionPlan,
+}: CombosTableProps) => {
   const [selectedCombo, setSelectedCombo] = useState<any | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  const limits = getPlanLimits(subscriptionPlan as any)
+  const isLimitReached = combos.length >= limits.maxCombos
 
   const handleDeleteClick = async (id: string) => {
     try {
@@ -55,7 +65,11 @@ const CombosTable = ({ combos, services }: CombosTableProps) => {
           Gerenciar combos
         </CardTitle>
         <div className="w-fit">
-          <UpsertComboDialog services={services} />
+          <UpsertComboDialog
+            services={services}
+            disabled={isLimitReached}
+            disabledMessage={`Limite de ${limits.maxCombos} atingido`}
+          />
         </div>
       </CardHeader>
       <CardContent>

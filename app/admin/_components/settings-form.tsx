@@ -34,6 +34,9 @@ const SettingsForm = ({ settings }: SettingsFormProps) => {
       startHour: (settings as any).startHour || "09:00",
       endHour: (settings as any).endHour || "19:00",
       phones: settings.phones || [],
+      trialDays: (settings as any).trialDays || 15,
+      instagramUrl: (settings as any).instagramUrl || "",
+      whatsappUrl: (settings as any).whatsappUrl || "",
     },
   })
 
@@ -122,6 +125,52 @@ const SettingsForm = ({ settings }: SettingsFormProps) => {
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="trialDays"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Dias de Teste Grátis (Trial)</FormLabel>
+              <FormControl>
+                <Input type="number" placeholder="15" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="instagramUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Link do Instagram</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://instagram.com/suabarbearia"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="whatsappUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Link do WhatsApp</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://wa.me/55..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}

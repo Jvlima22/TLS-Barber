@@ -8,9 +8,18 @@ interface GetBookingsProps {
   date: Date
 }
 
-export const getBookings = ({ date }: GetBookingsProps) => {
-  return db.booking.findMany({
+import { getServerSession } from "next-auth"
+import { authOptions } from "../_lib/auth"
+
+export const getBookings = async ({ date }: GetBookingsProps) => {
+  const session = await getServerSession(authOptions)
+  const barbershopId = (session?.user as any)?.barbershopId
+
+  if (!barbershopId) return []
+
+  return (db as any).booking.findMany({
     where: {
+      barbershopId,
       date: {
         lte: endOfDay(date),
         gte: startOfDay(date),

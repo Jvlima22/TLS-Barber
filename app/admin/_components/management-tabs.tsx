@@ -28,6 +28,7 @@ interface ManagementTabsProps {
   operatingDays: any[]
   operatingExceptions: any[]
   banks: any[]
+  subscriptionPlan: string
   children: React.ReactNode // Dashboard content
 }
 
@@ -35,6 +36,7 @@ const ManagementTabs = ({
   services,
   products,
   combos,
+  subscriptionPlan,
   settings,
   operatingDays,
   operatingExceptions,
@@ -134,10 +136,24 @@ const ManagementTabs = ({
 
       <div className="mt-2">
         {activeTab === "dashboard" && children}
-        {activeTab === "services" && <ServicesTable services={services} />}
-        {activeTab === "products" && <ProductsTable products={products} />}
+        {activeTab === "services" && (
+          <ServicesTable
+            services={services}
+            subscriptionPlan={subscriptionPlan}
+          />
+        )}
+        {activeTab === "products" && (
+          <ProductsTable
+            products={products}
+            subscriptionPlan={subscriptionPlan}
+          />
+        )}
         {activeTab === "combos" && (
-          <CombosTable combos={combos} services={services} />
+          <CombosTable
+            combos={combos}
+            services={services}
+            subscriptionPlan={subscriptionPlan}
+          />
         )}
         {activeTab === "settings" && <SettingsForm settings={settings} />}
         {activeTab === "operating-hours" && (

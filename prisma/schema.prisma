@@ -10,18 +10,49 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(cuid())
-  email         String     @unique
-  name          String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  emailVerified DateTime?
-  image         String?
-  role          Role       @default(USER)
-  accounts      Account[]
-  bookings      Booking[]
-  purchases     Purchase[]
-  sessions      Session[]
+  id               String           @id @default(cuid())
+  email            String           @unique
+  password         String?
+  name             String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  emailVerified    DateTime?
+  image            String?
+  role             Role             @default(USER)
+  subscriptionPlan SubscriptionPlan @default(FREE)
+  trialEndsAt      DateTime?
+  hasUsedTrial     Boolean          @default(false)
+  barbershopId     String?
+  barbershop       Barbershop?      @relation(fields: [barbershopId], references: [id])
+  accounts         Account[]
+  bookings         Booking[]
+  purchases        Purchase[]
+  sessions         Session[]
+  stripeCustomerId String?
+}
+
+model Barbershop {
+  id                  String               @id @default(uuid())
+  name                String
+  slug                String               @unique
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  users               User[]
+  services            Service[]
+  products            Product[]
+  bookings            Booking[]
+  purchases           Purchase[]
+  combos              Combo[]
+  banks               Bank[]
+  settings            Settings?
+  operatingDays       OperatingDay[]
+  operatingExceptions OperatingException[]
+}
+
+enum SubscriptionPlan {
+  FREE
+  BARBER
+  PREMIUM
 }
 
 model Account {
@@ -61,61 +92,83 @@ model VerificationToken {
 }
 
 model Settings {
-  id          Int      @id @default(1)
-  name        String
-  address     String
-  phones      String[]
-  description String
-  imageUrl    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  endHour     String   @default("19:00")
-  startHour   String   @default("09:00")
+  id           String     @id @default(uuid())
+  barbershopId String     @unique
+  name         String
+  address      String
+  phones       String[]
+  description  String
+  imageUrl     String
+  instagramUrl String?
+  whatsappUrl  String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  endHour      String     @default("19:00")
+  startHour    String     @default("09:00")
+  trialDays    Int        @default(15)
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
 }
 
 model OperatingDay {
-  id        String   @id @default(uuid())
-  dayOfWeek Int      @unique
-  startTime String   @default("09:00")
-  endTime   String   @default("19:00")
-  isOpen    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String     @id @default(uuid())
+  barbershopId String
+  dayOfWeek    Int
+  startTime    String     @default("09:00")
+  endTime      String     @default("19:00")
+  isOpen       Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+
+  @@unique([barbershopId, dayOfWeek])
 }
 
 model OperatingException {
-  id          String   @id @default(uuid())
-  date        DateTime @unique
-  startTime   String?
-  endTime     String?
-  isOpen      Boolean  @default(true)
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String     @id @default(uuid())
+  barbershopId String
+  date         DateTime
+  startTime    String?
+  endTime      String?
+  isOpen       Boolean    @default(true)
+  description  String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+
+  @@unique([barbershopId, date])
 }
 
 model Service {
-  id          String    @id @default(uuid())
-  name        String    @unique
-  description String
-  imageUrl    String
-  price       Decimal   @db.Decimal(10, 2)
-  bookings    Booking[]
-  combo1      Combo[]   @relation("Service1")
-  combo2      Combo[]   @relation("Service2")
+  id           String     @id @default(uuid())
+  barbershopId String
+  name         String
+  description  String
+  imageUrl     String
+  price        Decimal    @db.Decimal(10, 2)
+  bookings     Booking[]
+  combo1       Combo[]    @relation("Service1")
+  combo2       Combo[]    @relation("Service2")
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+
+  @@unique([barbershopId, name])
 }
 
 model Product {
-  id          String     @id @default(uuid())
-  name        String     @unique
-  description String
-  imageUrl    String
-  price       Decimal    @db.Decimal(10, 2)
-  purchases   Purchase[]
+  id           String     @id @default(uuid())
+  barbershopId String
+  name         String
+  description  String
+  imageUrl     String
+  price        Decimal    @db.Decimal(10, 2)
+  purchases    Purchase[]
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+
+  @@unique([barbershopId, name])
 }
 
 model Booking {
   id                      String         @id @default(uuid())
+  barbershopId            String
   userId                  String
   serviceId               String?
   date                    DateTime
@@ -127,10 +180,12 @@ model Booking {
   combo                   Combo?         @relation(fields: [comboId], references: [id])
   service                 Service?       @relation(fields: [serviceId], references: [id])
   user                    User           @relation(fields: [userId], references: [id])
+  barbershop              Barbershop     @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
 }
 
 model Purchase {
   id                      String         @id @default(uuid())
+  barbershopId            String
   userId                  String
   productId               String
   quantity                Int            @default(1)
@@ -140,32 +195,39 @@ model Purchase {
   updatedAt               DateTime       @updatedAt
   product                 Product        @relation(fields: [productId], references: [id])
   user                    User           @relation(fields: [userId], references: [id])
+  barbershop              Barbershop     @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
 }
 
 model Combo {
-  id          String    @id @default(uuid())
-  name        String
-  description String
-  imageUrl    String
-  price       Decimal   @db.Decimal(10, 2)
-  service1Id  String
-  service2Id  String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  bookings    Booking[]
-  service1    Service   @relation("Service1", fields: [service1Id], references: [id])
-  service2    Service   @relation("Service2", fields: [service2Id], references: [id])
+  id           String     @id @default(uuid())
+  barbershopId String
+  name         String
+  description  String
+  imageUrl     String
+  price        Decimal    @db.Decimal(10, 2)
+  service1Id   String
+  service2Id   String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  bookings     Booking[]
+  service1     Service    @relation("Service1", fields: [service1Id], references: [id])
+  service2     Service    @relation("Service2", fields: [service2Id], references: [id])
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
 }
 
 model Bank {
-  id          String          @id @default(uuid())
-  name        String
-  provider    String          @unique
-  imageUrl    String?
-  isActive    Boolean         @default(true)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  credentials BankCredential?
+  id           String          @id @default(uuid())
+  barbershopId String
+  name         String
+  provider     String
+  imageUrl     String?
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  credentials  BankCredential?
+  barbershop   Barbershop      @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+
+  @@unique([barbershopId, provider])
 }
 
 model BankCredential {

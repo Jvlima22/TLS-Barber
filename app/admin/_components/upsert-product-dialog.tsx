@@ -34,6 +34,8 @@ interface UpsertProductDialogProps {
   // eslint-disable-next-line no-unused-vars
   onOpenChange?: (isOpen: boolean) => void
   hideTrigger?: boolean
+  disabled?: boolean
+  disabledMessage?: string
 }
 
 const UpsertProductDialog = ({
@@ -41,6 +43,8 @@ const UpsertProductDialog = ({
   isOpen: externalIsOpen,
   onOpenChange: externalOnOpenChange,
   hideTrigger,
+  disabled,
+  disabledMessage,
 }: UpsertProductDialogProps) => {
   const [internalIsOpen, setInternalIsOpen] = useState(false)
 
@@ -83,9 +87,17 @@ const UpsertProductDialog = ({
         <DialogTrigger asChild>
           <Button
             variant={defaultValues ? "ghost" : "default"}
+            disabled={disabled && !defaultValues}
             className="h-8 w-full px-3 text-xs lg:h-10 lg:px-4 lg:text-sm"
           >
-            {defaultValues ? "Editar" : "Adicionar produto"}
+            {defaultValues ? (
+              "Editar"
+            ) : (
+              <div className="flex items-center gap-2">
+                {disabled && <span className="text-xs">🔒</span>}
+                {disabled ? disabledMessage : "Adicionar produto"}
+              </div>
+            )}
           </Button>
         </DialogTrigger>
       )}

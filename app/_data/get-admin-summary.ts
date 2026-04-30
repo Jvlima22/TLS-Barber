@@ -7,9 +7,11 @@ import { db } from "../_lib/prisma"
 export const getAdminSummary = async () => {
   const session = await getServerSession(authOptions)
 
-  if ((session?.user as any)?.role !== "ADMIN") {
-    throw new Error("Acesso negado")
+  if (!session?.user || (session.user as any).role !== "ADMIN") {
+    throw new Error("Não autorizado")
   }
+
+  const barbershopId = (session.user as any).barbershopId
 
   const [
     bookings,
@@ -23,6 +25,7 @@ export const getAdminSummary = async () => {
     operatingExceptions,
   ] = await Promise.all([
     (db as any).booking.findMany({
+      where: { barbershopId },
       include: {
         user: true,
         service: true,
@@ -33,6 +36,7 @@ export const getAdminSummary = async () => {
       },
     }),
     (db as any).purchase.findMany({
+      where: { barbershopId },
       include: {
         user: true,
         product: true,
@@ -41,9 +45,14 @@ export const getAdminSummary = async () => {
         createdAt: "desc",
       },
     }),
-    (db as any).service.findMany(),
-    (db as any).product.findMany(),
+    (db as any).service.findMany({
+      where: { barbershopId },
+    }),
+    (db as any).product.findMany({
+      where: { barbershopId },
+    }),
     (db as any).combo.findMany({
+      where: { barbershopId },
       include: {
         service1: true,
         service2: true,
@@ -57,9 +66,17 @@ export const getAdminSummary = async () => {
         name: "asc",
       },
     }),
-    (db as any).settings.findFirst(),
-    (db as any).operatingDay.findMany({ orderBy: { dayOfWeek: "asc" } }),
-    (db as any).operatingException.findMany({ orderBy: { date: "asc" } }),
+    (db as any).settings.findFirst({
+      where: { barbershopId },
+    }),
+    (db as any).operatingDay.findMany({
+      where: { barbershopId },
+      orderBy: { dayOfWeek: "asc" },
+    }),
+    (db as any).operatingException.findMany({
+      where: { barbershopId },
+      orderBy: { date: "asc" },
+    }),
   ])
 
   return {

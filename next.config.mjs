@@ -14,6 +14,9 @@ const nextConfig = {
       {
         hostname: "www.pngall.com",
       },
+      {
+        hostname: "images.unsplash.com",
+      },
     ],
   },
 }

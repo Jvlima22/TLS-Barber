@@ -1,19 +1,35 @@
 "use client"
 
 import { Button } from "./ui/button"
-import { CalendarIcon, HomeIcon, LogOutIcon } from "lucide-react"
+import {
+  CalendarIcon,
+  HomeIcon,
+  LogOutIcon,
+  Store as StoreIcon,
+} from "lucide-react"
 import { SheetClose, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet"
 import { quickSearchOptions } from "../_constants/search"
 import Link from "next/link"
 import Image from "next/image"
 import { signOut, useSession } from "next-auth/react"
 import UserIcon from "./user-icon"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog"
 
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { useEffect, useState } from "react"
 import { getSettings } from "../_actions/get-settings"
-import { InstagramIcon } from "lucide-react"
+import { InstagramIcon, CreditCard } from "lucide-react"
 
 const SidebarSheet = () => {
   const { data } = useSession()
@@ -28,7 +44,7 @@ const SidebarSheet = () => {
     fetchSettings()
   }, [])
 
-  const handleLogoutClick = () => signOut()
+  const handleLogoutClick = () => signOut({ callbackUrl: "/" })
 
   const handleBookingsClick = () => {
     if (!data?.user) {
@@ -69,14 +85,37 @@ const SidebarSheet = () => {
             </SheetClose>
 
             {(data?.user as any)?.role === "ADMIN" && (
-              <Button className="justify-start gap-2" asChild>
-                <Link href="/admin" className="text-white">
-                  <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-primary text-[10px] text-white">
-                    A
-                  </div>
-                  Painel administrativo
-                </Link>
-              </Button>
+              <>
+                <Button className="justify-start gap-2" asChild>
+                  <Link href="/admin" className="text-white">
+                    <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-primary text-[10px] text-white">
+                      A
+                    </div>
+                    Painel administrativo
+                  </Link>
+                </Button>
+
+                <SheetClose asChild>
+                  <Button
+                    className="justify-start gap-2 text-white"
+                    onClick={() => router.push("/admin/subscription")}
+                  >
+                    <CreditCard size={18} color="#FFFFFF" />
+                    Gerenciar Assinatura
+                  </Button>
+                </SheetClose>
+              </>
+            )}
+
+            {data?.user && (data.user as any)?.role !== "ADMIN" && (
+              <SheetClose asChild>
+                <Button className="justify-start gap-2" asChild>
+                  <Link href="/dashboard" className="text-white">
+                    <StoreIcon size={18} color="#FFFFFF" />
+                    Escolher outra barbearia
+                  </Link>
+                </Button>
+              </SheetClose>
             )}
           </div>
 
@@ -100,13 +139,36 @@ const SidebarSheet = () => {
 
           {data?.user && (
             <div className="flex flex-col gap-2 py-5">
-              <Button
-                className="justify-start gap-2 text-white"
-                onClick={handleLogoutClick}
-              >
-                <LogOutIcon size={18} color="#FFFFFF" />
-                Sair da conta
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button className="justify-start gap-2 text-white">
+                    <LogOutIcon size={18} color="#FFFFFF" />
+                    Sair da conta
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="w-[90%] rounded-2xl border-white/10 bg-[#1D1D1D]">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-white">
+                      Sair da conta
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="text-gray-400">
+                      Tem certeza que deseja sair da sua conta? Você precisará
+                      fazer login novamente para acessar o sistema.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex-row gap-3 pt-4">
+                    <AlertDialogCancel className="flex-1 rounded-xl border-white/10 bg-transparent text-white hover:bg-white/5">
+                      Cancelar
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleLogoutClick}
+                      className="flex-1 rounded-xl border-none bg-red-500 text-white hover:bg-red-600"
+                    >
+                      Sair
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           )}
 

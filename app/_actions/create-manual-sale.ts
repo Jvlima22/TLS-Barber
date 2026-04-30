@@ -18,12 +18,15 @@ export const createManualSale = async (params: CreateManualSaleParams) => {
     throw new Error("Somente administradores podem realizar vendas manuais.")
   }
 
-  await db.purchase.create({
+  const barbershopId = (session.user as any).barbershopId
+
+  return await (db as any).purchase.create({
     data: {
       userId: params.userId,
       productId: params.productId,
       quantity: params.quantity,
-      paymentStatus: "SUCCEEDED", // Manual sales are usually paid on the spot
+      paymentStatus: "SUCCEEDED",
+      barbershopId,
     },
   })
 

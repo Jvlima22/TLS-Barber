@@ -29,15 +29,49 @@ const Header = () => {
     <Card>
       <CardContent className="flex flex-row items-center justify-between bg-[#1D1D1D] p-5">
         {/* Logo */}
-        <Link href="/">
-          <Image
-            alt="TLS Barber"
-            src="/Logo.svg"
-            height={18}
-            width={180}
-            className="lg:ml-[250px]"
-          />
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link
+            href={
+              data?.user
+                ? (data.user as any).role === "ADMIN"
+                  ? "/dashboard"
+                  : "/barbershops"
+                : "/"
+            }
+          >
+            <Image
+              alt="TLS Barber"
+              src="/Logo.svg"
+              height={18}
+              width={180}
+              className="lg:ml-[250px]"
+            />
+          </Link>
+
+          {/* TRIAL BADGE - ONLY FOR ADMIN AND FREE PLAN */}
+          {data?.user &&
+            (data.user as any).role === "ADMIN" &&
+            (data.user as any).subscriptionPlan === "FREE" && (
+              <div className="hidden items-center gap-2 rounded-full border border-[#2C78B2]/20 bg-[#2C78B2]/10 px-3 py-1.5 md:flex">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#2C78B2]" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2C78B2]">
+                  Teste:{" "}
+                  {(() => {
+                    const endsAt = (data.user as any).trialEndsAt
+                    if (!endsAt) return 0
+                    const now = new Date()
+                    const end = new Date(endsAt)
+                    const diffInMs = end.getTime() - now.getTime()
+                    const diffInDays = Math.ceil(
+                      diffInMs / (1000 * 60 * 60 * 24),
+                    )
+                    return diffInDays > 0 ? diffInDays : 0
+                  })()}{" "}
+                  dias
+                </span>
+              </div>
+            )}
+        </div>
 
         {/* Botões e Menu */}
         <div className="flex items-center lg:mr-[250px]">

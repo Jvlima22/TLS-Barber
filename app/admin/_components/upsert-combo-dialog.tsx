@@ -43,6 +43,8 @@ interface UpsertComboDialogProps {
   // eslint-disable-next-line no-unused-vars
   onOpenChange?: (isOpen: boolean) => void
   hideTrigger?: boolean
+  disabled?: boolean
+  disabledMessage?: string
 }
 
 const UpsertComboDialog = ({
@@ -51,6 +53,8 @@ const UpsertComboDialog = ({
   isOpen: externalIsOpen,
   onOpenChange: externalOnOpenChange,
   hideTrigger,
+  disabled,
+  disabledMessage,
 }: UpsertComboDialogProps) => {
   const [internalIsOpen, setInternalIsOpen] = useState(false)
 
@@ -94,9 +98,17 @@ const UpsertComboDialog = ({
         <DialogTrigger asChild>
           <Button
             variant={defaultValues ? "ghost" : "default"}
+            disabled={disabled && !defaultValues}
             className="h-8 w-full px-3 text-xs lg:h-10 lg:px-4 lg:text-sm"
           >
-            {defaultValues ? "Editar" : "Adicionar combo"}
+            {defaultValues ? (
+              "Editar"
+            ) : (
+              <div className="flex items-center gap-2">
+                {disabled && <span className="text-xs">🔒</span>}
+                {disabled ? disabledMessage : "Adicionar combo"}
+              </div>
+            )}
           </Button>
         </DialogTrigger>
       )}

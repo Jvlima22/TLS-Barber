@@ -76,11 +76,10 @@ export async function createMercadoPagoPayment(params: {
     )
   }
 
-  let appUrl = (
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.NEXT_PUBLIC_APP_URL_LOCAL ||
-    "http://localhost:3000"
-  ).replace(/\/$/, "")
+  let appUrl = (process.env.NEXT_PUBLIC_URL || "http://localhost:3000").replace(
+    /\/$/,
+    "",
+  )
 
   // Mercado Pago não aceita localhost na notification_url e exige HTTPS em produção
   const isLocal = appUrl.includes("localhost")

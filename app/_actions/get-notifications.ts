@@ -11,8 +11,15 @@ export const getNotifications = async () => {
     return { bookings: [], purchases: [] }
   }
 
+  const barbershopId = (session.user as any).barbershopId
+
+  if (!barbershopId) {
+    return { bookings: [], purchases: [] }
+  }
+
   const [bookings, purchases] = await Promise.all([
     (db as any).booking.findMany({
+      where: { barbershopId },
       take: 5,
       orderBy: {
         createdAt: "desc",
@@ -23,7 +30,8 @@ export const getNotifications = async () => {
         combo: true,
       },
     }),
-    db.purchase.findMany({
+    (db as any).purchase.findMany({
+      where: { barbershopId },
       take: 5,
       orderBy: {
         createdAt: "desc",
@@ -32,7 +40,7 @@ export const getNotifications = async () => {
         user: true,
         product: true,
       },
-    }),
+    }) as Promise<any[]>,
   ])
 
   // Convert Decimals to Numbers to avoid hydration issues

@@ -23,7 +23,7 @@ import { getBanks } from "../_actions/get-banks"
 const AdminPage = async () => {
   const session = await getServerSession(authOptions)
 
-  if ((session?.user as any)?.role !== "ADMIN") {
+  if (!session?.user || (session.user as any).role !== "ADMIN") {
     return redirect("/")
   }
 
@@ -80,6 +80,7 @@ const AdminPage = async () => {
           services={services}
           products={products}
           combos={combos}
+          subscriptionPlan={(session.user as any).subscriptionPlan}
           settings={
             settings ||
             ({

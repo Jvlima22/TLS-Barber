@@ -29,6 +29,7 @@ interface ServiceBookingSheetProps {
     description: string
     imageUrl: string
     price: number
+    barbershopId: string
   }
   isOpen: boolean
   onClose: () => void
@@ -63,8 +64,8 @@ const ServiceBookingSheet = ({
       const fetchOperatingSettings = async () => {
         try {
           const [days, currentExceptions] = await Promise.all([
-            getOperatingDays(),
-            getOperatingExceptions(),
+            getOperatingDays(service.barbershopId),
+            getOperatingExceptions(service.barbershopId),
           ])
           setOperatingDays(days)
           setExceptions(currentExceptions)
@@ -78,7 +79,7 @@ const ServiceBookingSheet = ({
       setHour(undefined)
       setAvailableSlots([])
     }
-  }, [isOpen])
+  }, [isOpen, service.barbershopId])
 
   // Fetch slots when date changes
   useEffect(() => {
@@ -93,7 +94,10 @@ const ServiceBookingSheet = ({
     const fetchBookings = async () => {
       setLoading(true)
       try {
-        const slots = await getAvailableSlots({ date: selectedDate })
+        const slots = await getAvailableSlots({
+          date: selectedDate,
+          barbershopId: service.barbershopId,
+        })
         setAvailableSlots(slots)
         setSlotsCache((prev) => ({ ...prev, [dateKey]: slots }))
       } catch (error) {
@@ -103,7 +107,7 @@ const ServiceBookingSheet = ({
       }
     }
     fetchBookings()
-  }, [selectedDate, slotsCache])
+  }, [selectedDate, slotsCache, service.barbershopId])
 
   const handleBooking = async () => {
     if (!session?.user) {

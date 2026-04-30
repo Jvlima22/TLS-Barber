@@ -25,13 +25,19 @@ import {
   AlertDialogTrigger,
 } from "@/app/_components/ui/alert-dialog"
 
+import { getPlanLimits } from "@/app/_lib/subscription-limits"
+
 interface ServicesTableProps {
   services: Service[]
+  subscriptionPlan: string
 }
 
-const ServicesTable = ({ services }: ServicesTableProps) => {
+const ServicesTable = ({ services, subscriptionPlan }: ServicesTableProps) => {
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  const limits = getPlanLimits(subscriptionPlan as any)
+  const isLimitReached = services.length >= limits.maxServices
 
   const handleDeleteClick = async (id: string) => {
     try {
@@ -54,7 +60,10 @@ const ServicesTable = ({ services }: ServicesTableProps) => {
           Gerenciar serviços
         </CardTitle>
         <div className="w-fit">
-          <UpsertServiceDialog />
+          <UpsertServiceDialog
+            disabled={isLimitReached}
+            disabledMessage={`Limite de ${limits.maxServices} atingido`}
+          />
         </div>
       </CardHeader>
       <CardContent>

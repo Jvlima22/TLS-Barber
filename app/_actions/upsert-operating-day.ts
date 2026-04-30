@@ -19,10 +19,21 @@ export const upsertOperatingDay = async (props: UpsertOperatingDayProps) => {
     throw new Error("Acesso negado")
   }
 
-  await (db as any).operatingDay.upsert({
-    where: { dayOfWeek: props.dayOfWeek },
-    update: props,
-    create: props,
+  if (!session?.user) {
+    throw new Error("Não autorizado")
+  }
+
+  const barbershopId = (session.user as any).barbershopId
+
+  return await (db as any).operatingDay.upsert({
+    where: {
+      barbershopId_dayOfWeek: {
+        barbershopId,
+        dayOfWeek: props.dayOfWeek,
+      },
+    },
+    update: { ...props, barbershopId },
+    create: { ...props, barbershopId },
   })
 
   revalidatePath("/admin")

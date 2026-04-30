@@ -14,6 +14,7 @@ interface CombinedServiceItemProps {
     description: string
     imageUrl: string
     price: number
+    barbershopId: string
     services: Array<{
       id: string
       name: string
@@ -35,6 +36,7 @@ const CombinedServiceItem = ({ service }: CombinedServiceItemProps) => {
     description: service.description,
     imageUrl: service.imageUrl,
     price: service.price,
+    barbershopId: service.barbershopId,
   }
 
   const handleBookingClick = () => {

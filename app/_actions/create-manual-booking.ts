@@ -28,9 +28,17 @@ export const createManualBooking = async (
   const [hours, minutes] = params.hour.split(":").map(Number)
   const bookingDate = setHours(setMinutes(params.date, minutes), hours)
 
-  const existingBooking = await db.booking.findFirst({
+  if (!session?.user) {
+    throw new Error("Não autorizado")
+  }
+
+  const barbershopId = (session.user as any).barbershopId
+
+  // Verificar se já existe agendamento no mesmo horário
+  const existingBooking = await (db as any).booking.findFirst({
     where: {
       date: bookingDate,
+      barbershopId,
     },
   })
 
@@ -38,14 +46,15 @@ export const createManualBooking = async (
     throw new Error("Já existe um agendamento para este horário.")
   }
 
-  await db.booking.create({
+  await (db as any).booking.create({
     data: {
       serviceId: params.serviceId,
       comboId: params.comboId,
       userId: params.userId,
       date: bookingDate,
-      paymentStatus: "SUCCEEDED", // Marcado como pago manualmente
-    } as any,
+      paymentStatus: "SUCCEEDED",
+      barbershopId,
+    },
   })
 
   revalidatePath("/admin")
