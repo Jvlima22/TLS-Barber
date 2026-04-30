@@ -17,11 +17,21 @@ export const createPurchase = async (params: CreatePurchaseParams) => {
     throw new Error("Usuário não autenticado!")
   }
 
+  const product = await db.product.findUnique({
+    where: { id: params.productId },
+    select: { barbershopId: true },
+  })
+
+  if (!product) {
+    throw new Error("Produto não encontrado!")
+  }
+
   await db.purchase.create({
     data: {
       productId: params.productId,
       quantity: params.quantity,
       userId: (session.user as any).id,
+      barbershopId: product.barbershopId,
     },
   })
 
