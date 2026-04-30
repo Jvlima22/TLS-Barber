@@ -32,11 +32,8 @@ export const createPurchase = async (params: CreatePurchaseParams) => {
       productId: params.productId,
       quantity: params.quantity,
       userId: (session.user as any).id,
-      // @ts-ignore
-      barbershop: {
-        connect: { id: product.barbershopId },
-      },
-    },
+      barbershopId: product.barbershopId,
+    } as any,
   })
 
   revalidatePath("/")
