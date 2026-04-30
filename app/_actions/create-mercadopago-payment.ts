@@ -32,17 +32,17 @@ export async function createMercadoPagoPayment(params: {
       price = orderedServices.reduce((acc, s) => acc + Number(s.price), 0)
       barbershopId = orderedServices[0]?.barbershopId || ""
     } else {
-      const service = await db.service.findUnique({
+      const service = (await db.service.findUnique({
         where: { id: params.itemId },
-      })
+      })) as any
       if (service) {
         title = service.name
         price = Number(service.price)
         barbershopId = service.barbershopId
       } else {
-        const combo = await db.combo.findUnique({
+        const combo = (await db.combo.findUnique({
           where: { id: params.itemId },
-        })
+        })) as any
         if (!combo) throw new Error("Serviço ou Combo não encontrado.")
         title = combo.name
         price = Number(combo.price)
@@ -50,9 +50,9 @@ export async function createMercadoPagoPayment(params: {
       }
     }
   } else {
-    const product = await db.product.findUnique({
+    const product = (await db.product.findUnique({
       where: { id: params.itemId },
-    })
+    })) as any
     if (!product) throw new Error("Produto não encontrado")
     title = product.name
     price = Number(product.price)
